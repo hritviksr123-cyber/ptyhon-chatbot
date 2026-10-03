@@ -1,0 +1,111 @@
+import random
+import re
+import time
+
+botRules = [
+    (
+        r"I need (.*)",
+        [
+            "Why do you need {0}?",
+            "Would it really help you to get {0}?",
+            "Are you sure you need {0}?",
+        ],
+    ),
+    (
+        r"Why don\'t you (.*)",
+        [
+            "Do you really think i dont {0}?",
+            "Perhaps in time I will {0}.",
+            "Do you want me to {0}?",
+        ],
+    ),
+    (
+        r"Why can\'t I (.*)",
+        [
+            "Do you think you should be able to {0}?",
+            "if you could {0}, what would you do?",
+            "What stops you from {0}?",
+        ],
+    ),
+    (
+        r"I am (.*)",
+        [
+            "Did you come to me because you are {0}?",
+            "How long have you been {0}?",
+            "How do you feel about being {0}?",
+        ],
+    ),
+    (
+        r"Are you (.*)",
+        [
+            "Why does it matter if I am {0}",
+            "Would you prefer if i were not {0}?",
+            "Perhaps you belive I am {0}.",
+        ],
+    ),
+    (
+        r"(.*) mother(.*)|(.*) father(.*)|(.*) brother(.*)|(.*) sister(.*)",
+        [
+            "tell me more about your family.",
+            "How do you feel about your relatives?",
+            "does your family influence you much?",
+        ],
+    ),
+    (
+        r"(.*)",
+        [
+            "Please tell me more.",
+            "Lets change focus. How does that make you feel?",
+            "Can you elaborate on that?",
+            "Why do you say that?",
+        ],
+    ),
+]
+
+REFLECTIONS = {
+    "i am": "you are",
+    "i": "you",
+    "me": "you",
+    "my": "your",
+    "myself": "yourself",
+    "you are": "I am",
+    "your": "my",
+    "yours": "mine",
+    "you": "me",
+}
+
+
+def reflect(fragment):
+    words = fragment.lower().split()
+    for i, word in enumerate(words):
+        if word in REFLECTIONS:  # Fixed variable name to uppercase REFLECTIONS
+            words[i] = REFLECTIONS[word]
+    return " ".join(words)
+
+
+def bot_respond(user_message):
+    for pattern, responses in botRules:
+        match = re.match(pattern, user_message, re.IGNORECASE)
+        if match:
+            chosen_response = random.choice(responses)
+
+            # Fixed typos: 'chosen respone' -> 'chosen_response'
+            if "{0}" in chosen_response and match.groups():
+                # Safely get the first matched group that isn't None
+                fragment = next((g for g in match.groups() if g is not None), "")
+                reflected_fragment = reflect(fragment)
+                return chosen_response.format(reflected_fragment)
+
+            return chosen_response
+
+
+print("Bot: Hello whats on your mind today?")
+while True:  # Fixed 'true' to 'True'
+    user_input = input("You: ").strip()
+    if user_input.lower() in ["bye", "quit", "exit"]:
+        print("Bot: Thanks for talking today, Goodbye!")
+        break
+
+    time.sleep(0.5)
+    bot_reply = bot_respond(user_input)
+    print(f"Bot: {bot_reply}")
